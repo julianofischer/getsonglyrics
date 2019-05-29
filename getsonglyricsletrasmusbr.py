@@ -5,6 +5,9 @@ import string
 import requests
 from nltk.corpus import stopwords
 from nltk import wordpunct_tokenize
+import time
+import random
+import multiprocessing
 
 #A-Z and 1
 CAPITAL_LETTERS = string.ascii_uppercase + "1"
@@ -25,11 +28,10 @@ def save_artists(artists):
             csv_writer.writerow(row)
 
 # return a list containing (href, name)
-def get_artists():
+def get_artists(letter):
     artists = []
-    for letter in CAPITAL_LETTERS:
-        url = URL_ARTIST_FORMAT_STR % letter
-        artists.extend(get_artist(url))
+    url = URL_ARTIST_FORMAT_STR % letter
+    artists.extend(get_artist(url))
     artists = map(convert_li_artist_tuple, artists)
     return artists
 
@@ -78,6 +80,7 @@ def detect_language(lyric):
 
 
 def get_genre_and_lyric(music):
+    time.sleep(random.uniform(0, 1))
     url = URL_FORMAT_STR % music
     print(url)
     page = requests.get(url)
@@ -93,14 +96,8 @@ def get_genre_and_lyric(music):
 #        f.write('\n'.join(musics))
 
 
-def main():
-    #artists = get_artists()
-    #save_artists(artists)
-    #musics = get_musics_titles('chk-chk-chk')
-    #save_musics(musics)
-    #print(detect_language("hola amigo como estás"))
-
-    for artist in get_artists():
+def get_by_letter(letter):
+    for artist in get_artists(letter):
         musics = get_musics_titles(artist[0])
         if len(musics) > 0:
             lyric = get_genre_and_lyric(musics[0][0])
@@ -114,6 +111,30 @@ def main():
                     for line in l:
                         csv_writer.writerow(line)
 
+def main():
+    #artists = get_artists()
+    #save_artists(artists)
+    #musics = get_musics_titles('chk-chk-chk')
+    #save_musics(musics)
+    #print(detect_language("hola amigo como estás"))
+    '''
+    for artist in get_artists('A'):
+        musics = get_musics_titles(artist[0])
+        if len(musics) > 0:
+            lyric = get_genre_and_lyric(musics[0][0])
+            if detect_language(lyric[1]) == 'portuguese':
+                l = []
+                for m in musics:
+                    lyric = get_genre_and_lyric(m[0])
+                    l.append(artist + lyric)
+                with open(f'{artist[0]}.csv','w') as f:
+                    csv_writer = csv.writer(f)
+                    for line in l:
+                        csv_writer.writerow(line)
+    '''
+
+    p = multiprocessing.Pool(multiprocessing.cpu_count())
+    p.map(get_by_letter, list(CAPITAL_LETTERS))
 
 if __name__ == "__main__":
     main()
