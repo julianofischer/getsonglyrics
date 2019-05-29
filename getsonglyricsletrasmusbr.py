@@ -106,7 +106,7 @@ def get_by_letter(letter):
                 for m in musics:
                     lyric = get_genre_and_lyric(m[0])
                     l.append(artist + lyric)
-                with open(f'{artist[0]}.csv','w') as f:
+                with open(f'{artist[0]}.csv','w', encoding='utf-8') as f:
                     csv_writer = csv.writer(f)
                     for line in l:
                         csv_writer.writerow(line)
