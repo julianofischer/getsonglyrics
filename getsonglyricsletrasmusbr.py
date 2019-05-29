@@ -117,24 +117,26 @@ def main():
     #musics = get_musics_titles('chk-chk-chk')
     #save_musics(musics)
     #print(detect_language("hola amigo como estás"))
-    '''
-    for artist in get_artists('A'):
-        musics = get_musics_titles(artist[0])
-        if len(musics) > 0:
-            lyric = get_genre_and_lyric(musics[0][0])
-            if detect_language(lyric[1]) == 'portuguese':
-                l = []
-                for m in musics:
-                    lyric = get_genre_and_lyric(m[0])
-                    l.append(artist + lyric)
-                with open(f'{artist[0]}.csv','w') as f:
-                    csv_writer = csv.writer(f)
-                    for line in l:
-                        csv_writer.writerow(line)
-    '''
+
+    '''for letter in list(CAPITAL_LETTERS):
+        for artist in get_artists(letter):
+            musics = get_musics_titles(artist[0])
+            if len(musics) > 0:
+                lyric = get_genre_and_lyric(musics[0][0])
+                if detect_language(lyric[1]) == 'portuguese':
+                    l = []
+                    for m in musics:
+                        lyric = get_genre_and_lyric(m[0])
+                        l.append(artist + lyric)
+                    with open(f'{artist[0]}.csv', 'w') as f:
+                        csv_writer = csv.writer(f)
+                        for line in l:
+                            csv_writer.writerow(line)'''
 
     p = multiprocessing.Pool(multiprocessing.cpu_count())
     p.map(get_by_letter, list(CAPITAL_LETTERS))
+    p.close()
+    p.join()
 
 if __name__ == "__main__":
     main()
