@@ -8,12 +8,13 @@ from nltk import wordpunct_tokenize
 import time
 import random
 import multiprocessing
+import glob
 
 #A-Z and 1
 CAPITAL_LETTERS = string.ascii_uppercase + "1"
 URL_FORMAT_STR = "https://www.letras.mus.br/%s/"
 URL_ARTIST_FORMAT_STR = "http://www.letras.mus.br/letra/%s/artistas.html"
-
+ALREADY_DOWNLOADED = [name.split('.')[0] for name in glob.glob("*.csv")]
 
 def convert_li_artist_tuple(li):
     href = li.a['href'] .strip('/')
@@ -40,8 +41,11 @@ def get_artist(url):
     page = requests.get(url)
     page_text = page.text
     bs = BeautifulSoup(page_text, "lxml")
-    ul_item = bs.find_all('ul', 'cnt-list')[0]
-    li_itens = ul_item.find_all('li')
+    ul_item = None
+    li_itens = []
+    if len(bs.find_all('ul', 'cnt-list')) > 0:
+        ul_item = bs.find_all('ul', 'cnt-list')[0]
+        li_itens = ul_item.find_all('li')
     return li_itens
 
 
@@ -51,8 +55,11 @@ def get_musics_titles(artist):
     page = requests.get(url)
     page_text = page.text
     bs = BeautifulSoup(page_text, "lxml")
-    ul_item = bs.find_all('ul', 'cnt-list')[0]
-    li_itens = ul_item.find_all('li')
+    ul_item = None
+    li_itens = []
+    if len(bs.find_all('ul', 'cnt-list')) > 0:
+        ul_item = bs.find_all('ul', 'cnt-list')[0]
+        li_itens = ul_item.find_all('li')
     musics = list(map(convert_li_artist_tuple, li_itens))
     return musics
 
@@ -97,7 +104,8 @@ def get_genre_and_lyric(music):
 
 
 def get_by_letter(letter):
-    for artist in get_artists(letter):
+    artists = [artist for artist in get_artists(letter) if artist[0] not in ALREADY_DOWNLOADED]
+    for artist in artists:
         musics = get_musics_titles(artist[0])
         if len(musics) > 0:
             lyric = get_genre_and_lyric(musics[0][0])
@@ -111,14 +119,16 @@ def get_by_letter(letter):
                     for line in l:
                         csv_writer.writerow(line)
 
-def main():
-    #artists = get_artists()
-    #save_artists(artists)
-    #musics = get_musics_titles('chk-chk-chk')
-    #save_musics(musics)
-    #print(detect_language("hola amigo como estás"))
 
-    '''for letter in list(CAPITAL_LETTERS):
+def main():
+    # artists = get_artists()
+    # save_artists(artists)
+    # musics = get_musics_titles('chk-chk-chk')
+    # save_musics(musics)
+    # print(detect_language("hola amigo como estás"))
+
+    '''
+    for letter in list(CAPITAL_LETTERS):
         for artist in get_artists(letter):
             musics = get_musics_titles(artist[0])
             if len(musics) > 0:
@@ -137,6 +147,7 @@ def main():
     p.map(get_by_letter, list(CAPITAL_LETTERS))
     p.close()
     p.join()
+
 
 if __name__ == "__main__":
     main()
